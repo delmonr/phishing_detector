@@ -28,7 +28,7 @@ pipeline {
                 echo 'Installing numpy...'
                 bat 'venv\\Scripts\\pip install --only-binary=:all: numpy==2.4.4'
                 echo 'Installing scikit-learn...'
-                bat 'venv\\Scripts\\pip install --only-binary=:all: scikit-learn==1.3.2'
+                bat 'venv\\Scripts\\pip install scikit-learn>=1.7.2
                 echo 'Installing Flask packages...'
                 bat 'venv\\Scripts\\pip install flask==3.0.3 flask-sqlalchemy==3.1.1 werkzeug==3.0.3'
             }
