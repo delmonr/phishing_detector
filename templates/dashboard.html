@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PhishGuard AI{% endblock %}
+
+{% block content %}
+<main class="page-main">
+  <div class="page-header">
+    <h1 class="page-title">Security Dashboard</h1>
+    <p class="page-sub">Welcome back, <span class="highlight">{{ user.username }}</span> — Your scan analytics at a glance.</p>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-grid">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">⬡</div>
+      <div class="stat-body">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total Scans</div>
+      </div>
+    </div>
+    <div class="stat-card stat-safe">
+      <div class="stat-icon">✓</div>
+      <div class="stat-body">
+        <div class="stat-value">{{ safe_cnt }}</div>
+        <div class="stat-label">Safe URLs</div>
+      </div>
+    </div>
+    <div class="stat-card stat-phish">
+      <div class="stat-icon">⚠</div>
+      <div class="stat-body">
+        <div class="stat-value">{{ phish_cnt }}</div>
+        <div class="stat-label">Phishing URLs</div>
+      </div>
+    </div>
+    <div class="stat-card stat-risk">
+      <div class="stat-icon">◈</div>
+      <div class="stat-body">
+        <div class="stat-value">{{ avg_risk }}%</div>
+        <div class="stat-label">Avg. Risk Score</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart + CTA row -->
+  <div class="mid-grid">
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">Scan Breakdown</span>
+      </div>
+      <div class="donut-wrap">
+        <canvas id="donutChart" width="200" height="200"></canvas>
+        <div class="donut-center">
+          {% if total > 0 %}
+            <div class="donut-pct">{{ ((safe_cnt/total)*100)|round(0)|int }}%</div>
+            <div class="donut-lbl">Safe</div>
+          {% else %}
+            <div class="donut-pct">—</div>
+            <div class="donut-lbl">No scans</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot safe-dot"></span> Safe ({{ safe_cnt }})</div>
+        <div class="legend-item"><span class="legend-dot phish-dot"></span> Phishing ({{ phish_cnt }})</div>
+      </div>
+    </div>
+
+    <div class="card cta-card">
+      <div class="cta-icon">🔍</div>
+      <h2 class="cta-title">Scan a URL Now</h2>
+      <p class="cta-desc">Instantly check any website for phishing indicators using our deep-learning model.</p>
+      <a href="{{ url_for('checker') }}" class="btn-primary">
+        <span class="btn-text">LAUNCH SCANNER</span>
+        <span class="btn-glow"></span>
+      </a>
+    </div>
+  </div>
+
+  <!-- History table -->
+  <div class="card history-card">
+    <div class="card-header">
+      <span class="card-title">Recent Scans</span>
+      <span class="card-badge">Last 50</span>
+    </div>
+
+    {% if scans %}
+    <div class="table-wrap">
+      <table class="scan-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>URL</th>
+            <th>Verdict</th>
+            <th>Risk Score</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in scans %}
+          <tr class="scan-row {% if s.result=='phishing' %}row-phish{% else %}row-safe{% endif %}">
+            <td class="td-num">{{ loop.index }}</td>
+            <td class="td-url">
+              <span class="url-text" title="{{ s.url }}">{{ s.url[:60] }}{% if s.url|length > 60 %}…{% endif %}</span>
+            </td>
+            <td class="td-verdict">
+              <span class="badge {% if s.result=='phishing' %}badge-phish{% else %}badge-safe{% endif %}">
+                {% if s.result=='phishing' %}⚠ PHISHING{% else %}✓ SAFE{% endif %}
+              </span>
+            </td>
+            <td class="td-risk">
+              <div class="risk-bar-wrap">
+                <div class="risk-bar" style="width:{{ s.risk_score }}%; background: {% if s.risk_score>60 %}var(--red){% elif s.risk_score>30 %}var(--amber){% else %}var(--green){% endif %}"></div>
+                <span class="risk-num">{{ s.risk_score }}%</span>
+              </div>
+            </td>
+            <td class="td-time">{{ s.timestamp.strftime('%b %d, %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p>No scans yet. <a href="{{ url_for('checker') }}" class="auth-link">Scan your first URL.</a></p>
+    </div>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+(function(){
+  const safe  = {{ safe_cnt }};
+  const phish = {{ phish_cnt }};
+  const total = safe + phish;
+  const canvas = document.getElementById('donutChart');
+  if(!canvas || total === 0) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 100, cy = 100, r = 75, sw = 22;
+  const safeAngle  = (safe/total) * 2 * Math.PI;
+  const phishAngle = (phish/total)* 2 * Math.PI;
+
+  function arc(start, end, color){
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,start,end);
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = sw;
+    ctx.lineCap     = 'butt';
+    ctx.stroke();
+  }
+
+  ctx.clearRect(0,0,200,200);
+  arc(-Math.PI/2, -Math.PI/2 + safeAngle,  '#00e676');
+  arc(-Math.PI/2 + safeAngle, -Math.PI/2 + safeAngle + phishAngle, '#ff1744');
+  if(total===0){ arc(0, 2*Math.PI, '#2a2a3e'); }
+})();
+</script>
+{% endblock %}

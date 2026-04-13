@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}PhishGuard AI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% block navbar %}
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="brand-icon">🛡</div>
+    <span class="brand-name">PhishGuard<span class="brand-ai">AI</span></span>
+  </div>
+  <div class="nav-links">
+    {% if session.get('username') %}
+      <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{{ url_for('checker') }}"   class="nav-link {% if request.endpoint=='checker'   %}active{% endif %}">Scan URL</a>
+      <div class="nav-user">
+        <span class="user-dot"></span>
+        <span>{{ session['username'] }}</span>
+      </div>
+      <a href="{{ url_for('logout') }}" class="nav-link nav-logout">Logout</a>
+    {% endif %}
+  </div>
+</nav>
+{% endblock %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat,msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

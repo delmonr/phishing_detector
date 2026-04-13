@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Scan URL — PhishGuard AI{% endblock %}
+
+{% block content %}
+<!-- ── Full-screen alert overlay ── -->
+<div id="alertOverlay" class="alert-overlay hidden">
+  <div class="alert-content">
+    <div class="alert-icon" id="alertIcon"></div>
+    <h2 class="alert-title" id="alertTitle"></h2>
+    <p class="alert-url" id="alertUrl"></p>
+    <div class="alert-risk">
+      <div class="risk-ring" id="riskRing">
+        <svg viewBox="0 0 120 120" class="ring-svg">
+          <circle cx="60" cy="60" r="50" class="ring-bg"/>
+          <circle cx="60" cy="60" r="50" class="ring-fill" id="ringFill"/>
+        </svg>
+        <div class="ring-label">
+          <span id="riskNumber">0</span><span class="ring-pct">%</span>
+          <div class="ring-sub">Risk</div>
+        </div>
+      </div>
+    </div>
+    <div class="alert-features" id="alertFeatures"></div>
+    <button class="btn-dismiss" id="dismissBtn">DISMISS</button>
+  </div>
+</div>
+
+<main class="page-main">
+  <div class="page-header">
+    <h1 class="page-title">URL Security Scanner</h1>
+    <p class="page-sub">Enter any URL to instantly analyse it for phishing indicators.</p>
+  </div>
+
+  <!-- Scanner card -->
+  <div class="card scanner-card">
+    <div class="scanner-header">
+      <div class="scanner-pulse"></div>
+      <span>DEEP SCAN ENGINE — ONLINE</span>
+    </div>
+
+    <div class="scan-input-row">
+      <div class="scan-input-wrap">
+        <span class="scan-icon">🔗</span>
+        <input type="url" id="urlInput" class="scan-input"
+               placeholder="https://example.com/path?query=value"
+               autocomplete="off" spellcheck="false"/>
+        <button id="scanBtn" class="btn-scan">
+          <span id="scanBtnText">SCAN</span>
+          <span class="btn-glow"></span>
+        </button>
+      </div>
+      <p class="scan-hint">Press <kbd>Enter</kbd> or click SCAN — results appear in under a second.</p>
+    </div>
+
+    <!-- Live result panel -->
+    <div id="resultPanel" class="result-panel hidden">
+      <div class="result-header">
+        <div id="resultBadge" class="result-badge"></div>
+        <div class="result-url-info">
+          <div id="resultUrl" class="result-url-text"></div>
+          <div id="resultTime" class="result-time"></div>
+        </div>
+      </div>
+
+      <div class="result-body">
+        <!-- Score gauge -->
+        <div class="gauge-wrap">
+          <div class="gauge-label">Risk Score</div>
+          <div class="gauge-track">
+            <div id="gaugeBar" class="gauge-bar"></div>
+          </div>
+          <div id="gaugeNumber" class="gauge-number"></div>
+        </div>
+
+        <!-- Feature grid -->
+        <div id="featureGrid" class="feature-grid"></div>
+      </div>
+    </div>
+
+    <!-- Scanning animation -->
+    <div id="scanningAnim" class="scanning-anim hidden">
+      <div class="scan-lines">
+        <div class="scan-line"></div>
+        <div class="scan-line"></div>
+        <div class="scan-line"></div>
+      </div>
+      <p class="scanning-text">Analysing URL…</p>
+    </div>
+  </div>
+
+  <!-- Tips card -->
+  <div class="card tips-card">
+    <div class="card-header"><span class="card-title">🔐 Phishing Red Flags</span></div>
+    <div class="tips-grid">
+      <div class="tip"><span class="tip-icon">⚠</span><strong>IP in URL</strong> — legitimate sites use domain names, not raw IPs.</div>
+      <div class="tip"><span class="tip-icon">⚠</span><strong>Long URLs</strong> — phishing URLs are often padded to obscure the real domain.</div>
+      <div class="tip"><span class="tip-icon">⚠</span><strong>@ symbol</strong> — browsers ignore everything before @, a classic trick.</div>
+      <div class="tip"><span class="tip-icon">⚠</span><strong>Excessive subdomains</strong> — e.g. paypal.com.login.evil.com is not PayPal.</div>
+      <div class="tip"><span class="tip-icon">⚠</span><strong>Hex encoding</strong> — %xx sequences often disguise phishing keywords.</div>
+      <div class="tip"><span class="tip-icon">⚠</span><strong>No HTTPS</strong> — while not sufficient alone, HTTP is a warning sign.</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Passed from Flask
+const API_URL = "/api/scan";
+</script>
+{% endblock %}
