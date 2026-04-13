@@ -22,11 +22,12 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            steps {
-                echo 'Installing required packages...'
-                bat 'venv\\Scripts\\pip install -r requirements.txt'
-            }
-        }
+    steps {
+        echo 'Installing required packages...'
+        bat 'venv\\Scripts\\pip install --upgrade pip'
+        bat 'venv\\Scripts\\pip install --prefer-binary -r requirements.txt'
+    }
+}
 
         stage('Run Model Test') {
             steps {
