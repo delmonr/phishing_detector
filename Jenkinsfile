@@ -23,9 +23,14 @@ pipeline {
 
         stage('Install Dependencies') {
     steps {
-        echo 'Installing required packages...'
-        bat 'venv\\Scripts\\pip install --upgrade pip'
-        bat 'venv\\Scripts\\pip install --prefer-binary -r requirements.txt'
+        echo 'Upgrading pip...'
+        bat 'venv\\Scripts\\python -m pip install --upgrade pip'
+        echo 'Installing numpy first...'
+        bat 'venv\\Scripts\\pip install --only-binary=:all: numpy==1.24.4'
+        echo 'Installing scikit-learn...'
+        bat 'venv\\Scripts\\pip install --only-binary=:all: scikit-learn==1.3.2'
+        echo 'Installing Flask packages...'
+        bat 'venv\\Scripts\\pip install flask==3.0.3 flask-sqlalchemy==3.1.1 werkzeug==3.0.3'
     }
 }
 
